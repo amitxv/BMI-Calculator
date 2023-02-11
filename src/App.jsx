@@ -10,7 +10,7 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 
 const darkTheme = createTheme({
   palette: {
@@ -24,6 +24,38 @@ function App() {
   const [height, setHeight] = useState("");
   const [computedBMI, setComputedBMI] = useState(0);
   const [range, setRange] = useState("");
+
+  const calculateBMI = () => {
+    // return early if values are invalid
+    if (!(weight && height)) {
+      setComputedBMI(0);
+      return;
+    }
+
+    // calculate BMI
+    let BMI = 0;
+    if (isMetric) {
+      const heightInMeters = height / 100;
+      BMI = weight / (heightInMeters ** 2);
+    } else {
+      const heightInInches = height / 2.54;
+      BMI = (703 * weight) / (heightInInches ** 2);
+    }
+    setComputedBMI(BMI);
+
+    // calculate range
+    if (BMI < 18.5) {
+      setRange("underweight");
+    } else if (BMI < 24.9) {
+      setRange("healthy");
+    } else if (BMI < 29.9) {
+      setRange("overweight");
+    } else if (BMI > 30) {
+      setRange("obese");
+    }
+  };
+
+  useEffect(calculateBMI, [isMetric]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -74,35 +106,7 @@ function App() {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => {
-              // return early if values are invalid
-              if (!(weight && height)) {
-                setComputedBMI(0);
-                return;
-              }
-
-              // calculate BMI
-              let BMI = 0;
-              if (isMetric) {
-                const heightInMeters = height / 100;
-                BMI = weight / (heightInMeters ** 2);
-              } else {
-                const heightInInches = height / 2.54;
-                BMI = (703 * weight) / (heightInInches ** 2);
-              }
-              setComputedBMI(BMI);
-
-              // calculate range
-              if (BMI < 18.5) {
-                setRange("underweight");
-              } else if (BMI < 24.9) {
-                setRange("healthy");
-              } else if (BMI < 29.9) {
-                setRange("overweight");
-              } else if (BMI > 30) {
-                setRange("obese");
-              }
-            }}
+            onClick={calculateBMI}
           >
             Submit
           </Button>
